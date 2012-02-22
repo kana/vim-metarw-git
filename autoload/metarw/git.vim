@@ -67,7 +67,7 @@ endfunction
 function! metarw#git#read(fakepath)  "{{{2
   let _ = s:parse_incomplete_fakepath(a:fakepath)
   if _.path_given_p  " 'git:{commit-ish}:...'?
-    if _.incomplete_path == '' || _.incomplete_path[-1:] == '/'
+    if _.incomplete_path == '' || _.incomplete_path[-1:] =~ '[\/]'
       " 'git:{commit-ish}:' or 'git:{commit-ish}:{tree}/'?
       let result = s:read_tree(_)
     else  " 'git:{commit-ish}:path'?
