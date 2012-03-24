@@ -1,6 +1,6 @@
 *metarw-git.txt*	metarw scheme: git
 
-Version 0.0.3
+Version 0.0.4
 Script ID: 2336
 Copyright (C) 2008 kana <http://whileimautomaton.net/>
 License: MIT license  {{{
@@ -106,6 +106,10 @@ BUGS						*metarw-git-bugs*
 
 ==============================================================================
 CHANGELOG					*metarw-git-changelog*
+
+0.0.4	2012-03-24T14:07:06+09:00		*metarw-git-changelog-0.0.4*
+	- Do not complete unnecessary stuffs as branches.
+	- Refine the document a bit.
 
 0.0.3	2009-05-13T00:59:53+09:00		*metarw-git-changelog-0.0.3*
 	- When completing branches, remove "remotes/" prefix from
