@@ -249,7 +249,7 @@ function! s:read_branches(_)  "{{{2
   \   }]
   for branch_name in s:git_branches(a:_.git_dir)
     call add(result, {
-    \      'label': branch_name,
+    \      'label': branch_name . '/',
     \      'fakepath': printf('%s:%s%s:',
     \                         a:_.scheme,
     \                         a:_.git_dir_part,
