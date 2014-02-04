@@ -67,7 +67,7 @@ endfunction
 function! metarw#git#read(fakepath)  "{{{2
   let _ = s:parse_incomplete_fakepath(a:fakepath)
   if _.path_given_p  " 'git:{commit-ish}:...'?
-    if _.incomplete_path == '' || _.incomplete_path[-1:] == '/'
+    if _.incomplete_path == '' || _.incomplete_path[-1:] =~ '[\/]'
       " 'git:{commit-ish}:' or 'git:{commit-ish}:{tree}/'?
       let result = s:read_tree(_)
     else  " 'git:{commit-ish}:path'?
@@ -103,7 +103,7 @@ function! s:git_branches(git_dir)  "{{{2
   " Assumption: Branches given by "git branch" are already sorted.
 
   let output_local = system(printf('git --git-dir=%s branch',
-  \                                shellescape(a:git_dir)))
+  \                                s:shellescape(a:git_dir)))
   if v:shell_error != 0
     echoerr '"git branch" failed with the following reason:'
     echoerr output_local
@@ -111,7 +111,7 @@ function! s:git_branches(git_dir)  "{{{2
   endif
 
   let output_remote = system(printf('git --git-dir=%s branch -r',
-  \                                 shellescape(a:git_dir)))
+  \                                 s:shellescape(a:git_dir)))
   if v:shell_error != 0
     echoerr '"git branch -r" failed with the following reason:'
     echoerr output_remote
@@ -131,10 +131,10 @@ function! s:git_ls_tree(git_dir, commit_ish, leading_path)  "{{{2
   let _ = []
 
   let output = system(printf("git --git-dir=%s ls-tree %s %s%s",
-  \                          shellescape(a:git_dir),
-  \                          shellescape(a:commit_ish),
-  \                          shellescape(a:leading_path),
-  \                          shellescape((a:leading_path == '' ? '.' : '/'))))
+  \                          s:shellescape(a:git_dir),
+  \                          s:shellescape(a:commit_ish),
+  \                          s:shellescape(a:leading_path),
+  \                          s:shellescape((a:leading_path == '' ? '.' : '/'))))
   if v:shell_error != 0
     echoerr 'git ls-tree failed with the following reason:'
     echoerr output
@@ -222,8 +222,8 @@ function! s:parse_incomplete_fakepath(incomplete_fakepath)  "{{{2
   endif
 
   let _.commit_ish = (_.given_commit_ish == '' ? 'HEAD' : _.given_commit_ish)
-  let _.leading_path = join(split(_.incomplete_path, '/', !0)[:-2], '/')
-  let _.last_component = join(split(_.incomplete_path, '/', !0)[-1:], '')
+  let _.leading_path = join(split(_.incomplete_path, '[\/]', !0)[:-2], '/')
+  let _.last_component = join(split(_.incomplete_path, '[\/]', !0)[-1:], '')
 
   return _
 endfunction
@@ -234,9 +234,9 @@ endfunction
 function! s:read_blob(_)  "{{{2
   return ['read',
   \       printf('!git --git-dir=%s show %s:%s',
-  \              shellescape(a:_.git_dir),
-  \              shellescape(a:_.commit_ish),
-  \              shellescape(a:_.incomplete_path))]
+  \              s:shellescape(a:_.git_dir),
+  \              s:shellescape(a:_.commit_ish),
+  \              s:shellescape(a:_.incomplete_path))]
 endfunction
 
 
@@ -265,15 +265,15 @@ endfunction
 function! s:read_commit(_)  "{{{2
   return ['read',
   \       printf('!git --git-dir=%s show %s',
-  \              shellescape(a:_.git_dir),
-  \              shellescape(a:_.commit_ish))]
+  \              s:shellescape(a:_.git_dir),
+  \              s:shellescape(a:_.commit_ish))]
 endfunction
 
 
 
 
 function! s:read_tree(_)  "{{{2
-  let parent_path = join(split(a:_.leading_path, '/', !0)[:-2], '/')
+  let parent_path = join(split(a:_.leading_path, '[\/]', !0)[:-2], '/')
   let result = [{
   \     'label': '../',
   \     'fakepath': (a:_.incomplete_path == ''
@@ -297,6 +297,14 @@ function! s:read_tree(_)  "{{{2
     \    })
   endfor
   return ['browse', result]
+endfunction
+
+
+
+
+function! s:shellescape(...)  "{{{2
+  let p = substitute(a:1, '\', '/', 'g')
+  return p == '' || p !~ ' ' ? p : call('shellescape', [p] + a:000[1:])
 endfunction
 
 
